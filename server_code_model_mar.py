@@ -4,6 +4,7 @@ import segmentation_models as sm
 import matplotlib.pyplot as plt
 
 from segmentation_models import Unet
+from segmentation_models import get_preprocessing
 from segmentation_models.losses import binary_crossentropy
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Input, Conv2D
@@ -21,6 +22,8 @@ img_rows = int(192)
 img_cols = int(192)
 smooth = 1.
 
+BACKBONE = 'resnet34'
+preprocess_input = get_preprocessing(BACKBONE)
 
 def dice_coef(y_true, y_pred):
     y_true_f = K.flatten(y_true)
@@ -62,11 +65,15 @@ imgs_test = load_test_data()
 imgs_train = preprocess(imgs_train)
 imgs_mask_train = preprocess(imgs_mask_train)
 
-imgs_train /= imgs_train.max()
-imgs_train = imgs_train.astype('float32')
+imgs_train = preprocess_input(imgs_train)
+imgs_mask_train = preprocess_input(imgs_mask_train)
 
-imgs_mask_train /= imgs_mask_train.max()
-imgs_mask_train = imgs_mask_train.astype('float32')
+
+#imgs_train /= imgs_train.max()
+#imgs_train = imgs_train.astype('float32')
+
+#imgs_mask_train /= imgs_mask_train.max()
+#imgs_mask_train = imgs_mask_train.astype('float32')
 
 imgs_test = load_test_data()
 
