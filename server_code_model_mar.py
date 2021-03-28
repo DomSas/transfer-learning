@@ -1,14 +1,16 @@
 import tensorflow
 import numpy as np
 import segmentation_models as sm
-from tensorflow.keras import backend as K
+import matplotlib.pyplot as plt
 
 from segmentation_models import Unet
 from segmentation_models.losses import binary_crossentropy
+from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Input, Conv2D
 from tensorflow.keras.models import Model
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, History
 from skimage.transform import resize
+from skimage.io import imsave
 
 #from segmentation_models.losses import bce_jaccard_loss
 #from segmentation_models.metrics import iou_score
@@ -95,19 +97,35 @@ my_callbacks = [ModelCheckpoint('weights.h5', monitor='dice_coef', save_best_onl
 #        EarlyStopping(monitor='val_loss', min_delta=0, patience=4, verbose=0, mode='auto')]
 #    model.load_weights('weights.h5')
 
-model.fit(
+history = model.fit(
     x=imgs_train,
     y=imgs_mask_train,
     batch_size=32,
-    epochs=50,
+    epochs=5,
     verbose=1,
     validation_split=0.2,
     callbacks=[my_callbacks]
 )
 
 
+# Predict
+print('-'*20)
+print('Predicting')
+print('-'*20)
 
+model.load_weights('weights.h5')
 
+imgs_mask_test = model.predict(imgs_test, verbose=1)
+np.save('imgs_mask_test.npy', imgs_mask_test)
+
+plt.plot(history.history['dice_coef'])
+plt.plot(history.history['val_dice_coef'])
+plt.title('Model dice coeff')
+plt.ylabel('Dice coeff')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Test'], loc='upper left')
+# plt.show()
+plt.savefig('results_transfer_learning.png')
 
 
 
